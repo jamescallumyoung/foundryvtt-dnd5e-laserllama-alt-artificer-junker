@@ -1,0 +1,15 @@
+{
+  "TYPES": {
+    "Item": {
+      "laserllama-alt-artificer-junker": {
+        "rigPilot": "Rig Pilot"
+      }
+    }
+  },
+  "LASERLLAMA_ALT_ARTIFICER": {
+    "TabRig": "Rig",
+    "TitanicMode": "Titanic Rig",
+    "UseTitanic": "Use Titanic Rig",
+    "PilotingRigEffectName": "Piloting Rig"
+  }
+}

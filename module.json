@@ -1,0 +1,40 @@
+{
+  "id": "laserllama-alt-artificer-junker",
+  "title": "LaserLlama Alternate Artificer - Junker",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "compatibility": {
+          "minimum": "5.1.0"
+        }
+      }
+    ]
+  },
+  "documentTypes": {
+    "Item": {
+      "rigPilot": {}
+    }
+  },
+  "esmodules": ["scripts/main.mjs"],
+  "styles": ["styles/module.css"],
+  "packs": [
+    {
+      "name": "items",
+      "type": "Item",
+      "path": "packs/items"
+    }
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ]
+}
