@@ -1,12 +1,6 @@
 {
-  "TYPES": {
-    "Item": {
-      "laserllama-alt-artificer-junker": {
-        "rigPilot": "Rig Pilot"
-      }
-    }
-  },
-  "LASERLLAMA_ALT_ARTIFICER": {
+  "laserllama-alt-artificer-junker": {
+    "RigPilotSubtype": "Rig Pilot",
     "TabRig": "Rig",
     "TitanicMode": "Titanic Rig",
     "UseTitanic": "Use Titanic Rig",

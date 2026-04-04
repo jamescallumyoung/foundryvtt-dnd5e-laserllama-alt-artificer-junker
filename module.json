@@ -16,11 +16,6 @@
       }
     ]
   },
-  "documentTypes": {
-    "Item": {
-      "rigPilot": {}
-    }
-  },
   "esmodules": ["scripts/main.mjs"],
   "styles": ["styles/module.css"],
   "packs": [

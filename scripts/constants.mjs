@@ -7,4 +7,12 @@ export const FLAGS = {
   IS_PILOTING_RIG_EFFECT: "isPilotingRigEffect"  // boolean — marks the Piloting Rig ActiveEffect
 };
 
-export const RIG_PILOT_TYPE = `${MODULE_ID}.rigPilot`;
+/**
+ * The key of the class feature subtype registered on game.dnd5e.config.featureTypes.class.subtypes.
+ * A "Rig Pilot" item is a standard dnd5e feat-type item with type.value = "class"
+ * and type.subtype = RIG_PILOT_SUBTYPE.
+ *
+ * Note: featureTypes subtypes have no automatic namespacing, so we manually
+ * prefix with the module ID to avoid collisions with other modules.
+ */
+export const RIG_PILOT_SUBTYPE = `${MODULE_ID}.rigPilot`;
