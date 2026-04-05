@@ -1,0 +1,158 @@
+<section class="tab rig-tab" data-group="primary" data-tab="rig">
+
+  {{!-- Variant toggle (edit mode only) + status --}}
+  <div class="rig-header">
+    <div class="rig-status {{#if isPiloting}}piloting{{else}}not-piloting{{/if}}">
+      {{#if isPiloting}}
+        <i class="fas fa-person-shelter"></i>
+        <span>{{localize "laserllama-alt-artificer-junker.StatusPiloting"}}</span>
+      {{else}}
+        <i class="fas fa-robot"></i>
+        <span>{{localize "laserllama-alt-artificer-junker.StatusNotPiloting"}}</span>
+      {{/if}}
+    </div>
+
+    {{#if isEditable}}
+    <label class="rig-titanic-toggle">
+      <input type="checkbox" data-action="toggleTitanic" {{#if isTitanic}}checked{{/if}} />
+      <span>{{localize "laserllama-alt-artificer-junker.UseTitanic"}}</span>
+    </label>
+    {{/if}}
+  </div>
+
+  {{!-- Variant label --}}
+  <h3 class="rig-variant-name">
+    {{#if isTitanic}}
+      {{localize "laserllama-alt-artificer-junker.TitanicRig"}}
+    {{else}}
+      {{localize "laserllama-alt-artificer-junker.StandardRig"}}
+    {{/if}}
+  </h3>
+
+  {{!-- Top section: sidebar (portrait + AC) + main stats --}}
+  <div class="rig-top">
+
+    {{!-- Sidebar: portrait placeholder and AC shield --}}
+    <div class="rig-sidebar">
+      <figure class="rig-portrait{{#if isEditable}} editable{{/if}}">
+        <img src="{{rigImg}}" alt="{{localize 'laserllama-alt-artificer-junker.RigPortrait'}}">
+      </figure>
+      <div class="ac-badge badge" aria-label="{{localize 'DND5E.ArmorClass'}}">
+        {{computedAC}}
+      </div>
+    </div>
+
+    {{!-- Main: abilities, HP bar, movement --}}
+    <div class="rig-main-stats">
+
+      {{!-- Ability scores: horizontal, name / score / mod stacked per column --}}
+      <div class="rig-abilities">
+        <div class="rig-ability">
+          <span class="label">{{localize "DND5E.AbilityStr"}}</span>
+          <span class="score">{{rigStats.abilities.str}}</span>
+          <span class="mod">{{abilityMod rigStats.abilities.str}}</span>
+        </div>
+        <div class="rig-ability">
+          <span class="label">{{localize "DND5E.AbilityDex"}}</span>
+          <span class="score">{{rigStats.abilities.dex}}</span>
+          <span class="mod">{{abilityMod rigStats.abilities.dex}}</span>
+        </div>
+        <div class="rig-ability">
+          <span class="label">{{localize "DND5E.AbilityCon"}}</span>
+          <span class="score">{{rigStats.abilities.con}}</span>
+          <span class="mod">{{abilityMod rigStats.abilities.con}}</span>
+        </div>
+      </div>
+
+      {{!-- HP bar using dnd5e's meter classes --}}
+      <div class="meter-group">
+        <div class="label roboto-condensed-upper">
+          <span>{{localize "DND5E.HitPoints"}}</span>
+        </div>
+        <div class="meter sectioned hit-points">
+          <div class="progress hit-points"
+               role="meter"
+               aria-valuemin="0"
+               aria-valuenow="{{rigHp}}"
+               aria-valuemax="{{computedHpMax}}"
+               style="--bar-percentage: {{hpPct}}%">
+            <div class="label">
+              <span class="value">{{rigHp}}</span>
+              <span class="separator">/</span>
+              <span class="max">{{computedHpMax}}</span>
+            </div>
+          </div>
+          <input class="rig-hp-input" type="text" placeholder="{{rigHp}}" hidden>
+        </div>
+      </div>
+
+      {{!-- Movement --}}
+      <div class="rig-vitals-row">
+        <div class="rig-vital">
+          <span class="label">{{localize "laserllama-alt-artificer-junker.LabelWalk"}}</span>
+          <span class="value">{{rigStats.movement.walk}} ft.</span>
+        </div>
+        <div class="rig-vital">
+          <span class="label">{{localize "laserllama-alt-artificer-junker.LabelClimb"}}</span>
+          <span class="value">{{rigStats.movement.climb}} ft.</span>
+        </div>
+      </div>
+
+    </div>{{!-- .rig-main-stats --}}
+  </div>{{!-- .rig-top --}}
+
+  {{!-- Traits --}}
+  <div class="rig-traits">
+
+    <div class="rig-trait">
+      <span class="label">{{localize "laserllama-alt-artificer-junker.LabelDamageImmunities"}}</span>
+      <span class="value">{{#each rigStats.damageImmunities}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</span>
+    </div>
+
+    {{#if rigStats.damageResistances.length}}
+    <div class="rig-trait">
+      <span class="label">{{localize "laserllama-alt-artificer-junker.LabelDamageResistances"}}</span>
+      <span class="value">{{#each rigStats.damageResistances}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</span>
+    </div>
+    {{/if}}
+
+    <div class="rig-trait">
+      <span class="label">{{localize "laserllama-alt-artificer-junker.LabelConditionImmunities"}}</span>
+      <span class="value">{{#each rigStats.conditionImmunities}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</span>
+    </div>
+
+    <div class="rig-trait">
+      <span class="label">{{localize "laserllama-alt-artificer-junker.LabelDamageReduction"}}</span>
+      <span class="value">{{rigStats.damageReduction.value}}
+        <em>({{localize "laserllama-alt-artificer-junker.LabelDamageReductionBypass"}}:
+        {{#each rigStats.damageReduction.bypass}}{{this}}{{#unless @last}}, {{/unless}}{{/each}})</em>
+      </span>
+    </div>
+
+  </div>
+
+  {{!-- Features --}}
+  <div class="rig-section">
+    <h4>{{localize "laserllama-alt-artificer-junker.LabelFeatures"}}</h4>
+    <ol class="unlist rig-entries">
+      {{#each rigStats.features}}
+      <li class="rig-entry">
+        <p><strong>{{this.name}}.</strong> {{this.description}}</p>
+      </li>
+      {{/each}}
+    </ol>
+  </div>
+
+  {{!-- Actions --}}
+  <div class="rig-section">
+    <h4>{{localize "laserllama-alt-artificer-junker.LabelActions"}}</h4>
+    <ol class="unlist rig-entries">
+      {{#each rigStats.actions}}
+      <li class="rig-entry">
+        <p><strong>{{this.name}}.</strong> {{this.description}}</p>
+      </li>
+      {{/each}}
+    </ol>
+  </div>
+
+</section>

@@ -4,8 +4,11 @@ export const FLAGS = {
   IS_TITANIC:             "isTitanic",          // boolean — which stat block variant to show/use
   RIG_HP:                 "rigHp",              // number  — stored current HP of the Rig
   VALUE_STASH:            "rigActorValueStash",  // object  — actor stats saved before piloting
-  IS_PILOTING_RIG_EFFECT: "isPilotingRigEffect"  // boolean — marks the Piloting Rig ActiveEffect
+  IS_PILOTING_RIG_EFFECT: "isPilotingRigEffect", // boolean — marks the Piloting Rig ActiveEffect
+  RIG_IMG:                "rigImg",             // string  — image path for the Rig portrait
 };
+
+export const RIG_IMG_DEFAULT = "icons/svg/shield.svg";
 
 /**
  * The key of the class feature subtype registered on game.dnd5e.config.featureTypes.class.subtypes.
