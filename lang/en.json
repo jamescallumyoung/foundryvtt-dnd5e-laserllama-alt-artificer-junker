@@ -26,6 +26,8 @@
     "TooltipACBase": "Base",
     "TooltipACIntMod": "Intelligence Modifier",
     "TooltipACProfBonus": "Proficiency Bonus",
-    "TooltipTotal": "Total"
+    "TooltipTotal": "Total",
+    "DeleteEffectTitle": "Remove Piloting Rig Effect",
+    "DeleteEffectContent": "Also delete the Piloting Rig active effect from this actor?"
   }
 }
