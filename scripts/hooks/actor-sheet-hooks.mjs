@@ -1,5 +1,5 @@
 import { MODULE_ID, FLAGS, RIG_IMG_DEFAULT } from "../constants.mjs";
-import { getRigPilotItem, isPiloting } from "../helpers.mjs";
+import { getRigPilotItem, isPiloting, getArtificerLevel } from "../helpers.mjs";
 import { getRigStats } from "../rig-stats.mjs";
 import { setupRigTab } from "../setup-rig-tab.mjs";
 
@@ -15,21 +15,6 @@ Handlebars.registerHelper("abilityMod", (score) => {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Returns the actor's Artificer class level, or 0 if not found.
- * Falls back to 0 if the class identifier is not "artificer".
- *
- * @param {Actor} actor
- * @returns {number}
- */
-function getArtificerLevel(actor) {
-  return (
-    Object.values(actor.classes ?? {}).find(
-      (c) => c.system.identifier === "artificer"
-    )?.system.levels ?? 0
-  );
-}
 
 /**
  * Builds the template context object for the Rig tab.
@@ -134,14 +119,19 @@ async function onRenderActorSheet(app, html) {
   // --- Rig HP editing ---
   // HP is always editable by the owner regardless of sheet mode (play vs edit),
   // matching how dnd5e treats HP as a dynamic combat value.
-  // TODO (stage 5): when isPiloting, write to actor.system.attributes.hp instead.
+  // When piloting: current HP lives on the actor directly; read/write actor.system.attributes.hp.value.
+  // When not piloting: current HP is stored in the RIG_HP flag.
   const hpMeter = root.querySelector(".rig-tab .meter.hit-points");
   const hpLabel = hpMeter?.querySelector(".progress .label");
   const hpInput = hpMeter?.querySelector(".rig-hp-input");
 
   if (hpMeter && hpLabel && hpInput && app.isEditable) {
+    const piloting = isPiloting(actor);
+
     hpMeter.addEventListener("click", () => {
-      const current = actor.getFlag(MODULE_ID, FLAGS.RIG_HP) ?? 0;
+      const current = piloting
+        ? (actor.system.attributes.hp.value ?? 0)
+        : (actor.getFlag(MODULE_ID, FLAGS.RIG_HP) ?? 0);
       hpInput.value = String(current);
       hpLabel.hidden = true;
       hpInput.hidden = false;
@@ -159,7 +149,9 @@ async function onRenderActorSheet(app, html) {
       if (!raw) return;
 
       const max = 5 + 5 * getArtificerLevel(actor);
-      const current = actor.getFlag(MODULE_ID, FLAGS.RIG_HP) ?? 0;
+      const current = piloting
+        ? (actor.system.attributes.hp.value ?? 0)
+        : (actor.getFlag(MODULE_ID, FLAGS.RIG_HP) ?? 0);
       let next;
 
       if (raw.startsWith("+") || raw.startsWith("-")) {
@@ -172,7 +164,11 @@ async function onRenderActorSheet(app, html) {
       }
 
       next = Math.max(0, Math.min(max, Math.round(next)));
-      await actor.setFlag(MODULE_ID, FLAGS.RIG_HP, next);
+      if (piloting) {
+        await actor.update({ "system.attributes.hp.value": next });
+      } else {
+        await actor.setFlag(MODULE_ID, FLAGS.RIG_HP, next);
+      }
     };
 
     hpInput.addEventListener("blur", commitHp);
@@ -238,6 +234,46 @@ async function onRenderActorSheet(app, html) {
       );
     });
     acBadge.addEventListener("mouseleave", () => game.tooltip.deactivate());
+  }
+
+  // --- Edit mode toggle interception ---
+  // The toggle is a <slide-toggle data-action="changeMode" class="mode-slider">
+  // custom element. When piloting, intercept clicks going into edit mode and
+  // show a warning dialog before allowing the mode change.
+  const modeToggle = root.querySelector('slide-toggle[data-action="changeMode"]');
+  if (modeToggle) {
+    if (app._rigModeToggleHandler) {
+      modeToggle.removeEventListener("click", app._rigModeToggleHandler, true);
+    }
+    if (isPiloting(actor)) {
+      app._rigModeToggleHandler = async (e) => {
+        // The slide-toggle's internal checked state flips on click; read it
+        // before the click resolves. "checked" === EDIT mode in dnd5e's convention.
+        const goingToEdit = !modeToggle.checked;
+        if (!goingToEdit) return; // returning to play mode — allow freely
+
+        e.stopImmediatePropagation();
+        e.preventDefault();
+
+        const result = await foundry.applications.api.DialogV2.wait({
+          window: { title: game.i18n.localize(`${MODULE_ID}.EditWhilePilotingTitle`) },
+          content: game.i18n.localize(`${MODULE_ID}.EditWhilePilotingContent`),
+          buttons: [
+            { label: game.i18n.localize(`${MODULE_ID}.EditWhilePilotingCancel`),   action: "cancel" },
+            { label: game.i18n.localize(`${MODULE_ID}.EditWhilePilotingContinue`), action: "continue" },
+          ],
+        });
+
+        if (result === "continue") {
+          modeToggle.removeEventListener("click", app._rigModeToggleHandler, true);
+          modeToggle.click();
+          modeToggle.addEventListener("click", app._rigModeToggleHandler, true);
+        }
+      };
+      modeToggle.addEventListener("click", app._rigModeToggleHandler, true);
+    } else {
+      app._rigModeToggleHandler = null;
+    }
   }
 
   // --- Tab system: restore state + wire click listeners ---

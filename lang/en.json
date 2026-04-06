@@ -28,6 +28,11 @@
     "TooltipACProfBonus": "Proficiency Bonus",
     "TooltipTotal": "Total",
     "DeleteEffectTitle": "Remove Piloting Rig Effect",
-    "DeleteEffectContent": "Also delete the Piloting Rig active effect from this actor?"
+    "DeleteEffectContent": "Also delete the Piloting Rig active effect from this actor?",
+    "ArmorClassRigLabel": "Rig Armor",
+    "EditWhilePilotingTitle": "Editing While Piloting",
+    "EditWhilePilotingContent": "<p>Warning: Changes made to the character may be lost when they stop piloting their rig.</p><p>We <em>strongly</em> suggest you cancel this edit, stop piloting the rig, and then make any changes.</p><p>If you want to make changes to the rig itself, these can be done by adding changes to the &ldquo;Piloting Rig&rdquo; effect in the effects tab. Changes added to the &ldquo;Piloting Rig&rdquo; effect will only be applied when piloting the rig.</p><p>You may dismiss this warning by clicking &ldquo;Continue editing&rdquo; below.</p>",
+    "EditWhilePilotingCancel": "Cancel editing",
+    "EditWhilePilotingContinue": "Continue editing"
   }
 }

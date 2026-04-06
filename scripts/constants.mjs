@@ -11,6 +11,13 @@ export const FLAGS = {
 export const RIG_IMG_DEFAULT = "icons/svg/shield.svg";
 
 /**
+ * The key used to register our custom AC calculation type in CONFIG.DND5E.armorClasses.
+ * When piloting, the actor's ac.calc is set to this value so dnd5e evaluates
+ * the formula "10 + @abilities.int.mod + @attributes.prof" for the Rig's AC.
+ */
+export const RIG_ARMOR_CALC = "rigArmor";
+
+/**
  * The key of the class feature subtype registered on game.dnd5e.config.featureTypes.class.subtypes.
  * A "Rig Pilot" item is a standard dnd5e feat-type item with type.value = "class"
  * and type.subtype = RIG_PILOT_SUBTYPE.
