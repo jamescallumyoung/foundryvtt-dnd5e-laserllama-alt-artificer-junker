@@ -20,7 +20,21 @@
     {{/if}}
   </div>
 
-  {{!-- Variant label --}}
+  {{!-- Pilot section: shown only while piloting --}}
+  {{#if isPiloting}}
+  <div class="pilot-section">
+    <h3 class="rig-variant-name">{{localize "laserllama-alt-artificer-junker.PilotSectionHeading"}}</h3>
+    {{> "modules/laserllama-alt-artificer-junker/templates/stats-section.hbs"
+        img=pilotImg  isEditable=pilotEditable  altKey="laserllama-alt-artificer-junker.PilotPortrait"
+        ac=pilotAC
+        str=pilotStr  dex=pilotDex  con=pilotCon
+        hp=pilotHp    hpMax=pilotHpMax  hpPct=pilotHpPct
+        hasMovement=false
+    }}
+  </div>
+  {{/if}}
+
+  {{!-- Rig variant label --}}
   <h3 class="rig-variant-name">
     {{#if isTitanic}}
       {{localize "laserllama-alt-artificer-junker.TitanicRig"}}
@@ -29,77 +43,16 @@
     {{/if}}
   </h3>
 
-  {{!-- Top section: sidebar (portrait + AC) + main stats --}}
-  <div class="rig-top">
-
-    {{!-- Sidebar: portrait placeholder and AC shield --}}
-    <div class="rig-sidebar">
-      <figure class="rig-portrait{{#if isEditable}} editable{{/if}}">
-        <img src="{{rigImg}}" alt="{{localize 'laserllama-alt-artificer-junker.RigPortrait'}}">
-      </figure>
-      <div class="ac-badge badge" aria-label="{{localize 'DND5E.ArmorClass'}}">
-        {{computedAC}}
-      </div>
-    </div>
-
-    {{!-- Main: abilities, HP bar, movement --}}
-    <div class="rig-main-stats">
-
-      {{!-- Ability scores: horizontal, name / score / mod stacked per column --}}
-      <div class="rig-abilities">
-        <div class="rig-ability">
-          <span class="label">{{localize "DND5E.AbilityStr"}}</span>
-          <span class="score">{{rigStats.abilities.str}}</span>
-          <span class="mod">{{abilityMod rigStats.abilities.str}}</span>
-        </div>
-        <div class="rig-ability">
-          <span class="label">{{localize "DND5E.AbilityDex"}}</span>
-          <span class="score">{{rigStats.abilities.dex}}</span>
-          <span class="mod">{{abilityMod rigStats.abilities.dex}}</span>
-        </div>
-        <div class="rig-ability">
-          <span class="label">{{localize "DND5E.AbilityCon"}}</span>
-          <span class="score">{{rigStats.abilities.con}}</span>
-          <span class="mod">{{abilityMod rigStats.abilities.con}}</span>
-        </div>
-      </div>
-
-      {{!-- HP bar using dnd5e's meter classes --}}
-      <div class="meter-group">
-        <div class="label roboto-condensed-upper">
-          <span>{{localize "DND5E.HitPoints"}}</span>
-        </div>
-        <div class="meter sectioned hit-points">
-          <div class="progress hit-points"
-               role="meter"
-               aria-valuemin="0"
-               aria-valuenow="{{rigHp}}"
-               aria-valuemax="{{computedHpMax}}"
-               style="--bar-percentage: {{hpPct}}%">
-            <div class="label">
-              <span class="value">{{rigHp}}</span>
-              <span class="separator">/</span>
-              <span class="max">{{computedHpMax}}</span>
-            </div>
-          </div>
-          <input class="rig-hp-input" type="text" placeholder="{{rigHp}}" hidden>
-        </div>
-      </div>
-
-      {{!-- Movement --}}
-      <div class="rig-vitals-row">
-        <div class="rig-vital">
-          <span class="label">{{localize "laserllama-alt-artificer-junker.LabelWalk"}}</span>
-          <span class="value">{{rigStats.movement.walk}} ft.</span>
-        </div>
-        <div class="rig-vital">
-          <span class="label">{{localize "laserllama-alt-artificer-junker.LabelClimb"}}</span>
-          <span class="value">{{rigStats.movement.climb}} ft.</span>
-        </div>
-      </div>
-
-    </div>{{!-- .rig-main-stats --}}
-  </div>{{!-- .rig-top --}}
+  {{!-- Rig stats --}}
+  <div class="rig-stats-section">
+    {{> "modules/laserllama-alt-artificer-junker/templates/stats-section.hbs"
+        img=rigImg  isEditable=isEditable  altKey="laserllama-alt-artificer-junker.RigPortrait"
+        ac=computedAC
+        str=rigStats.abilities.str  dex=rigStats.abilities.dex  con=rigStats.abilities.con
+        hp=rigHp  hpMax=computedHpMax  hpPct=hpPct
+        hasMovement=true  movement=rigStats.movement
+    }}
+  </div>
 
   {{!-- Traits --}}
   <div class="rig-traits">

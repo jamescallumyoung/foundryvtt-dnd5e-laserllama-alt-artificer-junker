@@ -1,0 +1,75 @@
+{{!-- Reusable stats panel: portrait sidebar + abilities / HP bar + optional movement.
+     Context (all values passed explicitly as hash args from the caller):
+       img, isEditable, altKey   — portrait
+       ac                        — AC badge value
+       str, dex, con             — ability scores
+       hp, hpMax, hpPct          — HP bar
+       hasMovement, movement     — walk/climb row (rig only)
+--}}
+<div class="rig-top">
+
+  <div class="rig-sidebar">
+    <figure class="stats-portrait{{#if isEditable}} editable{{/if}}">
+      <img src="{{img}}" alt="{{localize altKey}}">
+    </figure>
+    <div class="ac-badge badge" aria-label="{{localize 'DND5E.ArmorClass'}}">
+      {{ac}}
+    </div>
+  </div>
+
+  <div class="rig-main-stats">
+
+    <div class="rig-abilities">
+      <div class="rig-ability">
+        <span class="label">{{localize "DND5E.AbilityStr"}}</span>
+        <span class="score">{{str}}</span>
+        <span class="mod">{{abilityMod str}}</span>
+      </div>
+      <div class="rig-ability">
+        <span class="label">{{localize "DND5E.AbilityDex"}}</span>
+        <span class="score">{{dex}}</span>
+        <span class="mod">{{abilityMod dex}}</span>
+      </div>
+      <div class="rig-ability">
+        <span class="label">{{localize "DND5E.AbilityCon"}}</span>
+        <span class="score">{{con}}</span>
+        <span class="mod">{{abilityMod con}}</span>
+      </div>
+    </div>
+
+    <div class="meter-group">
+      <div class="label roboto-condensed-upper">
+        <span>{{localize "DND5E.HitPoints"}}</span>
+      </div>
+      <div class="meter sectioned hit-points">
+        <div class="progress hit-points"
+             role="meter"
+             aria-valuemin="0"
+             aria-valuenow="{{hp}}"
+             aria-valuemax="{{hpMax}}"
+             style="--bar-percentage: {{hpPct}}%">
+          <div class="label">
+            <span class="value">{{hp}}</span>
+            <span class="separator">/</span>
+            <span class="max">{{hpMax}}</span>
+          </div>
+        </div>
+        <input class="stats-hp-input" type="text" placeholder="{{hp}}" hidden>
+      </div>
+    </div>
+
+    {{#if hasMovement}}
+    <div class="rig-vitals-row">
+      <div class="rig-vital">
+        <span class="label">{{localize "laserllama-alt-artificer-junker.LabelWalk"}}</span>
+        <span class="value">{{movement.walk}} ft.</span>
+      </div>
+      <div class="rig-vital">
+        <span class="label">{{localize "laserllama-alt-artificer-junker.LabelClimb"}}</span>
+        <span class="value">{{movement.climb}} ft.</span>
+      </div>
+    </div>
+    {{/if}}
+
+  </div>{{!-- .rig-main-stats --}}
+</div>{{!-- .rig-top --}}

@@ -13,7 +13,7 @@ Handlebars.registerHelper("abilityMod", (score) => {
 });
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Context builder
 // ---------------------------------------------------------------------------
 
 /**
@@ -33,13 +33,36 @@ function buildRigTabContext(actor, app) {
     ? actor.system.attributes.hp.value
     : (actor.getFlag(MODULE_ID, FLAGS.RIG_HP) ?? 0);
   const computedHpMax = 5 + 5 * artificerLevel;
+  const isEditable = app.isEditable && app._mode === 2;
+
+  // Pilot section — when piloting, read pre-override values from the expanded stash.
+  // Foundry expands dot-notation keys stored in flags, so access via nested paths.
+  let pilotImg, pilotAC, pilotStr, pilotDex, pilotCon, pilotHp, pilotHpMax;
+  if (piloting) {
+    const stash = actor.getFlag(MODULE_ID, FLAGS.VALUE_STASH);
+    pilotImg   = stash?.img ?? actor.img;
+    pilotAC    = actor.getFlag(MODULE_ID, FLAGS.PILOT_DISPLAY_AC) ?? 0;
+    pilotStr   = stash?.system?.abilities?.str?.value ?? 10;
+    pilotDex   = stash?.system?.abilities?.dex?.value ?? 10;
+    pilotCon   = stash?.system?.abilities?.con?.value ?? 10;
+    pilotHp    = stash?.system?.attributes?.hp?.value ?? 0;
+    pilotHpMax = stash?.system?.attributes?.hp?.max ?? 0;
+  } else {
+    pilotImg   = actor.img;
+    pilotAC    = actor.system.attributes.ac.value ?? 10;
+    pilotStr   = actor.system.abilities.str.value;
+    pilotDex   = actor.system.abilities.dex.value;
+    pilotCon   = actor.system.abilities.con.value;
+    pilotHp    = actor.system.attributes.hp.value ?? 0;
+    pilotHpMax = actor.system.attributes.hp.max ?? 0;
+  }
 
   return {
     isTitanic,
     rigStats,
     // Match dnd5e's own context.editable: requires both ownership AND edit mode.
     // app.isEditable alone is permission-only (always true for the owner).
-    isEditable: app.isEditable && app._mode === 2,
+    isEditable,
     isPiloting: piloting,
     rigHp,
     computedAC:
@@ -49,7 +72,118 @@ function buildRigTabContext(actor, app) {
     computedHpMax,
     hpPct: computedHpMax > 0 ? Math.round((rigHp / computedHpMax) * 100) : 0,
     rigImg: actor.getFlag(MODULE_ID, FLAGS.RIG_IMG) ?? RIG_IMG_DEFAULT,
+    // Pilot section
+    pilotImg,
+    pilotAC,
+    pilotStr,
+    pilotDex,
+    pilotCon,
+    pilotHp,
+    pilotHpMax,
+    pilotHpPct: pilotHpMax > 0 ? Math.round((pilotHp / pilotHpMax) * 100) : 0,
+    // Edit mode for pilot portrait: only allow changing the actor portrait when not piloting,
+    // since actor.img is the rig image while piloting.
+    pilotEditable: isEditable && !piloting,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Stats section wiring
+// ---------------------------------------------------------------------------
+
+/**
+ * Wires portrait click, AC badge tooltip, and HP bar editing for one stats section.
+ *
+ * @param {HTMLElement} sectionEl  Root of the section; all queries are scoped within it.
+ * @param {object}      opts
+ * @param {() => string}                           opts.getImg         Current portrait src.
+ * @param {((path: string) => void)|null}          opts.onImgEdit      FilePicker callback;
+ *                                                                     null = portrait is read-only
+ *                                                                     (shows ImagePopout instead).
+ * @param {string}                                 opts.imgTitle       Pre-localized ImagePopout title.
+ * @param {string}                                 opts.uuid           Actor UUID for ImagePopout.
+ * @param {() => string}                           opts.buildAcTooltip Returns inner HTML for tooltip.
+ * @param {() => number}                           opts.getHp          Current HP (used as edit baseline).
+ * @param {() => number}                           opts.getHpMax       Max HP (used for clamping).
+ * @param {((next: number) => Promise<void>)|null} opts.onHpCommit     Commit callback;
+ *                                                                     null = HP bar is read-only.
+ */
+function wireStatsSection(sectionEl, { getImg, onImgEdit, imgTitle, uuid, buildAcTooltip, getHp, getHpMax, onHpCommit }) {
+  // --- Portrait ---
+  const portrait = sectionEl.querySelector(".stats-portrait");
+  if (portrait) {
+    portrait.addEventListener("click", () => {
+      const current = getImg();
+      if (onImgEdit) {
+        new FilePicker({ type: "image", current, callback: onImgEdit }).render(true);
+      } else {
+        new ImagePopout(current, { title: imgTitle, uuid }).render(true);
+      }
+    });
+  }
+
+  // --- AC badge tooltip ---
+  const acBadge = sectionEl.querySelector(".ac-badge");
+  if (acBadge) {
+    acBadge.addEventListener("mouseenter", () => {
+      game.tooltip.activate(acBadge, {
+        direction: "DOWN",
+        cssClass: "property-attribution",
+        text: game.i18n.localize("DND5E.ArmorClass"), // prevents rendering "undefined"
+      });
+      document.getElementById("tooltip")?.replaceChildren(
+        document.createRange().createContextualFragment(buildAcTooltip())
+      );
+    });
+    acBadge.addEventListener("mouseleave", () => game.tooltip.deactivate());
+  }
+
+  // --- HP bar ---
+  if (!onHpCommit) return; // read-only; no editing to wire up
+
+  const hpMeter = sectionEl.querySelector(".meter.hit-points");
+  const hpLabel = hpMeter?.querySelector(".progress .label");
+  const hpInput = hpMeter?.querySelector(".stats-hp-input");
+  if (!hpMeter || !hpLabel || !hpInput) return;
+
+  hpMeter.addEventListener("click", () => {
+    hpInput.value = String(getHp());
+    hpLabel.hidden = true;
+    hpInput.hidden = false;
+    hpInput.select();
+    hpInput.focus();
+  });
+
+  hpInput.addEventListener("click", (e) => e.stopPropagation());
+
+  const commit = async () => {
+    hpInput.hidden = true;
+    hpLabel.hidden = false;
+    const raw = hpInput.value.trim();
+    if (!raw) return;
+
+    const current = getHp();
+    const max     = getHpMax();
+    let next;
+
+    if (raw.startsWith("+") || raw.startsWith("-")) {
+      const delta = Number(raw);
+      if (Number.isNaN(delta)) return;
+      next = current + delta;
+    } else {
+      next = Number(raw);
+      if (Number.isNaN(next)) return;
+    }
+
+    next = Math.max(0, Math.min(max, Math.round(next)));
+    await onHpCommit(next);
+  };
+
+  hpInput.addEventListener("blur", commit);
+  hpInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter")  { e.preventDefault(); hpInput.blur(); }
+    if (e.key === "Escape") { hpInput.value = ""; hpInput.blur(); }
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -95,86 +229,84 @@ async function onRenderActorSheet(app, html) {
   }
   tabContainer.insertAdjacentHTML("beforeend", tabContent);
 
-  // --- Rig portrait ---
-  const portrait = root.querySelector(".rig-portrait");
-  if (portrait) {
-    portrait.addEventListener("click", () => {
-      const current = actor.getFlag(MODULE_ID, FLAGS.RIG_IMG) ?? RIG_IMG_DEFAULT;
-      const inEditMode = app.isEditable && app._mode === 2;
-      if (inEditMode) {
-        new FilePicker({
-          type: "image",
-          current,
-          callback: (path) => actor.setFlag(MODULE_ID, FLAGS.RIG_IMG, path),
-        }).render(true);
-      } else {
-        new ImagePopout(current, {
-          title: game.i18n.localize(`${MODULE_ID}.RigPortrait`),
-          uuid: actor.uuid,
-        }).render(true);
-      }
+  const piloting = isPiloting(actor);
+  const fmt = (n) => (n >= 0 ? `+${n}` : `${n}`);
+  const t   = (key) => game.i18n.localize(`${MODULE_ID}.${key}`);
+
+  // --- Rig stats section ---
+  const rigSection = root.querySelector(".rig-stats-section");
+  if (rigSection) {
+    wireStatsSection(rigSection, {
+      getImg: () => actor.getFlag(MODULE_ID, FLAGS.RIG_IMG) ?? RIG_IMG_DEFAULT,
+      onImgEdit: (app.isEditable && app._mode === 2)
+        ? (path) => actor.setFlag(MODULE_ID, FLAGS.RIG_IMG, path)
+        : null,
+      imgTitle: t("RigPortrait"),
+      uuid: actor.uuid,
+      buildAcTooltip: () => {
+        const intMod = actor.system.abilities.int.mod ?? 0;
+        const pb     = actor.system.attributes.prof ?? 0;
+        const base   = 10;
+        const total  = base + intMod + pb;
+        return `<table>
+          <caption>${game.i18n.localize("DND5E.ArmorClass")}</caption>
+          <tbody>
+            <tr>
+              <td class="attribution-value mode-ADD">+${base}</td>
+              <td class="attribution-label">${t("TooltipACBase")}</td>
+            </tr>
+            <tr>
+              <td class="attribution-value mode-ADD">${fmt(intMod)}</td>
+              <td class="attribution-label">${t("TooltipACIntMod")}</td>
+            </tr>
+            <tr>
+              <td class="attribution-value mode-ADD">${fmt(pb)}</td>
+              <td class="attribution-label">${t("TooltipACProfBonus")}</td>
+            </tr>
+            <tr class="total">
+              <td class="attribution-value">${total}</td>
+              <td class="attribution-label">${t("TooltipTotal")}</td>
+            </tr>
+          </tbody>
+        </table>`;
+      },
+      getHp:    () => piloting
+        ? (actor.system.attributes.hp.value ?? 0)
+        : (actor.getFlag(MODULE_ID, FLAGS.RIG_HP) ?? 0),
+      getHpMax: () => 5 + 5 * getArtificerLevel(actor),
+      onHpCommit: app.isEditable
+        ? async (next) => {
+            if (piloting) await actor.update({ "system.attributes.hp.value": next });
+            else          await actor.setFlag(MODULE_ID, FLAGS.RIG_HP, next);
+          }
+        : null,
     });
   }
 
-  // --- Rig HP editing ---
-  // HP is always editable by the owner regardless of sheet mode (play vs edit),
-  // matching how dnd5e treats HP as a dynamic combat value.
-  // When piloting: current HP lives on the actor directly; read/write actor.system.attributes.hp.value.
-  // When not piloting: current HP is stored in the RIG_HP flag.
-  const hpMeter = root.querySelector(".rig-tab .meter.hit-points");
-  const hpLabel = hpMeter?.querySelector(".progress .label");
-  const hpInput = hpMeter?.querySelector(".rig-hp-input");
-
-  if (hpMeter && hpLabel && hpInput && app.isEditable) {
-    const piloting = isPiloting(actor);
-
-    hpMeter.addEventListener("click", () => {
-      const current = piloting
-        ? (actor.system.attributes.hp.value ?? 0)
-        : (actor.getFlag(MODULE_ID, FLAGS.RIG_HP) ?? 0);
-      hpInput.value = String(current);
-      hpLabel.hidden = true;
-      hpInput.hidden = false;
-      hpInput.select();
-      hpInput.focus();
-    });
-
-    // Prevent clicks inside the input from re-triggering the meter click.
-    hpInput.addEventListener("click", (e) => e.stopPropagation());
-
-    const commitHp = async () => {
-      hpInput.hidden = true;
-      hpLabel.hidden = false;
-      const raw = hpInput.value.trim();
-      if (!raw) return;
-
-      const max = 5 + 5 * getArtificerLevel(actor);
-      const current = piloting
-        ? (actor.system.attributes.hp.value ?? 0)
-        : (actor.getFlag(MODULE_ID, FLAGS.RIG_HP) ?? 0);
-      let next;
-
-      if (raw.startsWith("+") || raw.startsWith("-")) {
-        const delta = Number(raw);
-        if (Number.isNaN(delta)) return;
-        next = current + delta;
-      } else {
-        next = Number(raw);
-        if (Number.isNaN(next)) return;
-      }
-
-      next = Math.max(0, Math.min(max, Math.round(next)));
-      if (piloting) {
-        await actor.update({ "system.attributes.hp.value": next });
-      } else {
-        await actor.setFlag(MODULE_ID, FLAGS.RIG_HP, next);
-      }
-    };
-
-    hpInput.addEventListener("blur", commitHp);
-    hpInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { e.preventDefault(); hpInput.blur(); }
-      if (e.key === "Escape") { hpInput.value = ""; hpInput.blur(); }
+  // --- Pilot stats section (only present in DOM while piloting) ---
+  const pilotSection = root.querySelector(".pilot-section");
+  if (pilotSection) {
+    const stash = actor.getFlag(MODULE_ID, FLAGS.VALUE_STASH);
+    wireStatsSection(pilotSection, {
+      getImg:    () => stash?.img ?? actor.img,
+      onImgEdit: null, // pilot portrait is read-only while piloting
+      imgTitle:  t("PilotPortrait"),
+      uuid:      actor.uuid,
+      buildAcTooltip: () => {
+        const total = actor.getFlag(MODULE_ID, FLAGS.PILOT_DISPLAY_AC) ?? 0;
+        return `<table>
+          <caption>${game.i18n.localize("DND5E.ArmorClass")}</caption>
+          <tbody>
+            <tr class="total">
+              <td class="attribution-value">${total}</td>
+              <td class="attribution-label">${t("TooltipTotal")}</td>
+            </tr>
+          </tbody>
+        </table>`;
+      },
+      getHp:      () => stash?.system?.attributes?.hp?.value ?? 0,
+      getHpMax:   () => stash?.system?.attributes?.hp?.max ?? 0,
+      onHpCommit: null, // pilot HP is read-only while piloting
     });
   }
 
@@ -185,57 +317,6 @@ async function onRenderActorSheet(app, html) {
       await actor.setFlag(MODULE_ID, FLAGS.IS_TITANIC, e.target.checked);
     });
 
-  // --- AC badge attribution tooltip ---
-  // Uses the same pattern as dnd5e's Tooltips5e: activate Foundry's tooltip
-  // then override innerHTML with an attribution table, since data-attribution
-  // reads the actor's real AC formula rather than our custom rig formula.
-  const acBadge = root.querySelector('.rig-tab .ac-badge');
-  if (acBadge) {
-    const fmt = (n) => (n >= 0 ? `+${n}` : `${n}`);
-    acBadge.addEventListener("mouseenter", () => {
-      const intMod = actor.system.abilities.int.mod ?? 0;
-      const pb     = actor.system.attributes.prof ?? 0;
-      const base   = 10;
-      const total  = base + intMod + pb;
-
-      const t = (key) => game.i18n.localize(`${MODULE_ID}.${key}`);
-
-      const html = `<table>
-        <caption>${game.i18n.localize("DND5E.ArmorClass")}</caption>
-        <tbody>
-          <tr>
-            <td class="attribution-value mode-ADD">+${base}</td>
-            <td class="attribution-label">${t("TooltipACBase")}</td>
-          </tr>
-          <tr>
-            <td class="attribution-value mode-ADD">${fmt(intMod)}</td>
-            <td class="attribution-label">${t("TooltipACIntMod")}</td>
-          </tr>
-          <tr>
-            <td class="attribution-value mode-ADD">${fmt(pb)}</td>
-            <td class="attribution-label">${t("TooltipACProfBonus")}</td>
-          </tr>
-          <tr class="total">
-            <td class="attribution-value">${total}</td>
-            <td class="attribution-label">${t("TooltipTotal")}</td>
-          </tr>
-        </tbody>
-      </table>`;
-
-      // game.tooltip.element is the hovered element, not the tooltip DOM node.
-      // Use #tooltip directly, same as dnd5e's Tooltips5e does internally.
-      game.tooltip.activate(acBadge, {
-        direction: "DOWN",
-        cssClass: "property-attribution",
-        text: game.i18n.localize("DND5E.ArmorClass"), // prevents rendering "undefined"
-      });
-      document.getElementById("tooltip")?.replaceChildren(
-        document.createRange().createContextualFragment(html)
-      );
-    });
-    acBadge.addEventListener("mouseleave", () => game.tooltip.deactivate());
-  }
-
   // --- Edit mode toggle interception ---
   // The toggle is a <slide-toggle data-action="changeMode" class="mode-slider">
   // custom element. When piloting, intercept clicks going into edit mode and
@@ -245,7 +326,7 @@ async function onRenderActorSheet(app, html) {
     if (app._rigModeToggleHandler) {
       modeToggle.removeEventListener("click", app._rigModeToggleHandler, true);
     }
-    if (isPiloting(actor)) {
+    if (piloting) {
       app._rigModeToggleHandler = async (e) => {
         // The slide-toggle's internal checked state flips on click; read it
         // before the click resolves. "checked" === EDIT mode in dnd5e's convention.
@@ -256,11 +337,11 @@ async function onRenderActorSheet(app, html) {
         e.preventDefault();
 
         const result = await foundry.applications.api.DialogV2.wait({
-          window: { title: game.i18n.localize(`${MODULE_ID}.EditWhilePilotingTitle`) },
-          content: game.i18n.localize(`${MODULE_ID}.EditWhilePilotingContent`),
+          window: { title: t("EditWhilePilotingTitle") },
+          content: t("EditWhilePilotingContent"),
           buttons: [
-            { label: game.i18n.localize(`${MODULE_ID}.EditWhilePilotingCancel`),   action: "cancel" },
-            { label: game.i18n.localize(`${MODULE_ID}.EditWhilePilotingContinue`), action: "continue" },
+            { label: t("EditWhilePilotingCancel"),   action: "cancel" },
+            { label: t("EditWhilePilotingContinue"), action: "continue" },
           ],
         });
 
@@ -285,5 +366,9 @@ async function onRenderActorSheet(app, html) {
 // ---------------------------------------------------------------------------
 
 export function registerActorSheetHooks() {
+  // Pre-load the stats section partial so it is available when renderTemplate runs.
+  foundry.applications.handlebars.loadTemplates([
+    `modules/${MODULE_ID}/templates/stats-section.hbs`,
+  ]);
   Hooks.on("renderActorSheetV2", onRenderActorSheet);
 }

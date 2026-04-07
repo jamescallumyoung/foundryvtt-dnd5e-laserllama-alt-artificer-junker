@@ -95,16 +95,16 @@ async function startPiloting(actor) {
   const computedHpMax = 5 + 5 * getArtificerLevel(actor);
   const rigImg    = actor.getFlag(MODULE_ID, FLAGS.RIG_IMG) ?? RIG_IMG_DEFAULT;
 
+  // Capture the pilot's current AC before any overrides.
+  // Stored in a dedicated flag so it is never mixed into the actor.update() stash.
+  await actor.setFlag(MODULE_ID, FLAGS.PILOT_DISPLAY_AC, actor.system.attributes.ac.value);
+
   // Build stash — capture exact current values before we overwrite anything.
   const mv = actor.system.attributes.movement;
   const stash = {
     // Portrait + token image
     "img":                        actor.img,
     "prototypeToken.texture.src": actor.prototypeToken.texture.src,
-
-    // Pre-piloting computed AC value (stored with a simple key, not dot-notation,
-    // so Foundry's flag expansion doesn't nest it and it can be read back directly).
-    "pilotAC": actor.system.attributes.ac.value,
 
     // Abilities
     "system.abilities.str.value": actor.system.abilities.str.value,

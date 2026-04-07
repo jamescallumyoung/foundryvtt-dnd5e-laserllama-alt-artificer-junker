@@ -6,6 +6,7 @@ export const FLAGS = {
   VALUE_STASH:            "rigActorValueStash",  // object  — actor stats saved before piloting
   IS_PILOTING_RIG_EFFECT: "isPilotingRigEffect", // boolean — marks the Piloting Rig ActiveEffect
   RIG_IMG:                "rigImg",             // string  — image path for the Rig portrait
+  PILOT_DISPLAY_AC:       "pilotDisplayAC",     // number  — pilot's pre-piloting AC for display
 };
 
 export const RIG_IMG_DEFAULT = "icons/svg/shield.svg";
