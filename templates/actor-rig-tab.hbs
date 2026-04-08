@@ -25,10 +25,16 @@
   <div class="pilot-section">
     <h3 class="rig-variant-name">{{localize "laserllama-alt-artificer-junker.PilotSectionHeading"}}</h3>
     {{> "modules/laserllama-alt-artificer-junker/templates/stats-section.hbs"
-        img=pilotImg  isEditable=pilotEditable  altKey="laserllama-alt-artificer-junker.PilotPortrait"
+        img=pilotImg
+        isEditable=pilotEditable
+        altKey="laserllama-alt-artificer-junker.PilotPortrait"
         ac=pilotAC
-        str=pilotStr  dex=pilotDex  con=pilotCon
-        hp=pilotHp    hpMax=pilotHpMax  hpPct=pilotHpPct
+        str=pilotStr
+        dex=pilotDex
+        con=pilotCon
+        hp=pilotHp
+        hpMax=pilotHpMax
+        hpPct=pilotHpPct
         hasMovement=false
     }}
   </div>
@@ -46,11 +52,18 @@
   {{!-- Rig stats --}}
   <div class="rig-stats-section">
     {{> "modules/laserllama-alt-artificer-junker/templates/stats-section.hbs"
-        img=rigImg  isEditable=isEditable  altKey="laserllama-alt-artificer-junker.RigPortrait"
+        img=rigImg
+        isEditable=isEditable
+        altKey="laserllama-alt-artificer-junker.RigPortrait"
         ac=computedAC
-        str=rigStats.abilities.str  dex=rigStats.abilities.dex  con=rigStats.abilities.con
-        hp=rigHp  hpMax=computedHpMax  hpPct=hpPct
-        hasMovement=true  movement=rigStats.movement
+        str=rigStats.abilities.str
+        dex=rigStats.abilities.dex
+        con=rigStats.abilities.con
+        hp=rigHp
+        hpMax=computedHpMax
+        hpPct=hpPct
+        hasMovement=true
+        movement=rigStats.movement
     }}
   </div>
 

@@ -1,7 +1,7 @@
 import { MODULE_ID, FLAGS, RIG_IMG_DEFAULT } from "../constants.mjs";
 import { getRigPilotItem, isPiloting, getArtificerLevel } from "../helpers.mjs";
 import { getRigStats } from "../rig-stats.mjs";
-import { setupRigTab } from "../setup-rig-tab.mjs";
+import { setupRigTab } from "./setup-rig-tab.mjs";
 
 // ---------------------------------------------------------------------------
 // Handlebars helpers
