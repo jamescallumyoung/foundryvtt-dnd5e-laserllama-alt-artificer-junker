@@ -5,6 +5,7 @@ export const FLAGS = {
   RIG_HP:                 "rigHp",              // number  — stored current HP of the Rig
   VALUE_STASH:            "rigActorValueStash",  // object  — actor stats saved before piloting
   IS_PILOTING_RIG_EFFECT: "isPilotingRigEffect", // boolean — marks the Piloting Rig ActiveEffect
+  IS_RIG_STATS_EFFECT:    "isRigStatsEffect",   // boolean — marks the Rig Stats ActiveEffect
   RIG_IMG:                "rigImg",             // string  — image path for the Rig portrait
   PILOT_DISPLAY_AC:       "pilotDisplayAC",     // number  — pilot's pre-piloting AC for display
 };

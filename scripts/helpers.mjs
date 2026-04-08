@@ -57,3 +57,20 @@ export function isPiloting(actor) {
   const effect = getPilotingEffect(actor);
   return effect != null && !effect.disabled;
 }
+
+/**
+ * Returns the "Rig Stats" Active Effect from the actor, or null.
+ * This effect carries the stat overrides applied while piloting and is
+ * created on piloting start / deleted on piloting stop.
+ * Detection is by flag so it is locale-independent.
+ *
+ * @param {Actor} actor
+ * @returns {ActiveEffect|null}
+ */
+export function getRigStatsEffect(actor) {
+  return (
+    actor?.effects?.find(
+      (e) => e.flags?.[MODULE_ID]?.[FLAGS.IS_RIG_STATS_EFFECT] === true
+    ) ?? null
+  );
+}

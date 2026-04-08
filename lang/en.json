@@ -5,6 +5,7 @@
     "TitanicMode": "Titanic Rig",
     "UseTitanic": "Use Titanic Rig",
     "PilotingRigEffectName": "Piloting Rig",
+    "RigStatsEffectName": "Rig Stats",
     "StatusPiloting": "Currently Piloting",
     "StatusNotPiloting": "Not Piloting",
     "LabelCurrentHp": "Current HP",
