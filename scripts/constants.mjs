@@ -11,6 +11,8 @@ export const FLAGS = {
 };
 
 export const RIG_IMG_DEFAULT = "icons/svg/shield.svg";
+export const RIG_PILOTING_EFFECT_IMG_DEFAULT = "icons/svg/lever.svg"
+export const RIG_STATS_EFFECT_IMG_DEFAULT = "icons/svg/dice-target.svg"
 
 /**
  * The key used to register our custom AC calculation type in CONFIG.DND5E.armorClasses.

@@ -1,4 +1,4 @@
-import { MODULE_ID, FLAGS, RIG_PILOT_SUBTYPE } from "../constants.mjs";
+import { MODULE_ID, FLAGS, RIG_PILOT_SUBTYPE, RIG_PILOTING_EFFECT_IMG_DEFAULT } from "../constants.mjs";
 import { getPilotingEffect } from "../helpers.mjs";
 
 /**
@@ -30,7 +30,7 @@ async function onCreateItem(item, _options, userId) {
   await actor.createEmbeddedDocuments("ActiveEffect", [
     {
       name: game.i18n.localize(`${MODULE_ID}.PilotingRigEffectName`),
-      img: `modules/${MODULE_ID}/img/piloting-rig-effect.webp`,
+      img: RIG_PILOTING_EFFECT_IMG_DEFAULT,
       disabled: true,
       changes: [],
       flags: { [MODULE_ID]: { [FLAGS.IS_PILOTING_RIG_EFFECT]: true } },
