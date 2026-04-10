@@ -8,6 +8,7 @@ import { MODULE_ID, RIG_PILOT_SUBTYPE, RIG_ARMOR_CALC } from "./constants.mjs";
 import { registerActorSheetHooks } from "./actor-sheet/actor-sheet-hooks.mjs";
 import { registerClassFeatureHooks } from "./class-feature/class-feature-hooks.mjs";
 import { registerPilotingHooks } from "./piloting/piloting-hooks.mjs";
+import * as api from "./api.mjs";
 
 Hooks.once("init", () => {
   // Register "Rig Pilot" as a class feature subtype in the dnd5e system.
@@ -78,5 +79,6 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
+  game.modules.get(MODULE_ID).api = api;
   console.log(`${MODULE_ID} | Ready`);
 });
