@@ -7,6 +7,7 @@ export const FLAGS = {
   IS_PILOTING_RIG_EFFECT: "isPilotingRigEffect", // boolean — marks the Piloting Rig ActiveEffect
   IS_RIG_STATS_EFFECT:    "isRigStatsEffect",   // boolean — marks the Rig Stats ActiveEffect
   IS_RIG_FEATURE:         "isRigFeature",       // boolean — marks items added to the actor while piloting
+  IS_RIG_SLAM:            "isRigSlam",          // boolean — marks the Rig Slam weapon item
   RIG_IMG:                "rigImg",             // string  — image path for the Rig portrait
   PILOT_DISPLAY_AC:       "pilotDisplayAC",     // number  — pilot's pre-piloting AC for display
 };

@@ -1,5 +1,6 @@
 import { MODULE_ID, FLAGS, RIG_PILOT_SUBTYPE, RIG_PILOTING_EFFECT_IMG_DEFAULT } from "../constants.mjs";
-import { getPilotingEffect } from "../helpers.mjs";
+import { getPilotingEffect, getRigSlamItem } from "../helpers.mjs";
+import { RIG_SLAM } from "../rig-stats.mjs";
 
 /**
  * Returns true if this item is a Rig Pilot class feature.
@@ -25,17 +26,31 @@ async function onCreateItem(item, _options, userId) {
 
   const actor = item.parent;
   if (!actor) return;
-  if (getPilotingEffect(actor)) return; // already exists
-
-  await actor.createEmbeddedDocuments("ActiveEffect", [
-    {
+  
+  // add "piloting rig" active effect
+  if (!getPilotingEffect(actor)) {
+    await actor.createEmbeddedDocuments("ActiveEffect", [{
       name: game.i18n.localize(`${MODULE_ID}.PilotingRigEffectName`),
       img: RIG_PILOTING_EFFECT_IMG_DEFAULT,
       disabled: true,
       changes: [],
       flags: { [MODULE_ID]: { [FLAGS.IS_PILOTING_RIG_EFFECT]: true } },
-    },
-  ]);
+    }]);
+  }
+  
+  // add "rig slam" weapon item
+  if (!getRigSlamItem(actor)) {
+    await actor.createEmbeddedDocuments("Item", [{
+      name:   game.i18n.localize(`${MODULE_ID}.RigSlamWeaponName`),
+      type:   "weapon",
+      img:    RIG_SLAM.img,
+      system: {
+        description: { value: RIG_SLAM.description },
+        ...RIG_SLAM.weapon,
+      },
+      flags: { [MODULE_ID]: { [FLAGS.IS_RIG_SLAM]: true } },
+    }]);
+  }
 }
 
 /**

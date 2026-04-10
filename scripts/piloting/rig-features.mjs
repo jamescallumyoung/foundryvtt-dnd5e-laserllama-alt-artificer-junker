@@ -53,16 +53,8 @@ export async function createRigFeatures(actor, rigStats) {
       effects: f.name === "Ironsides" ? [buildIronsidesEffect()] : [],
       flags:   flagData,
     })),
-    ...rigStats.actions.map(a => ({
-      name:   a.name,
-      type:   "feat",
-      system: {
-        description:  { value: a.description },
-        type:         { value: "class" },
-        requirements: "Rig Pilot",
-      },
-      flags: flagData,
-    })),
+    // Actions are not added here — Slam is a persistent weapon item (see class-feature-hooks.mjs).
+    // Titanic Transformation is not yet implemented.
   ];
 
   await actor.createEmbeddedDocuments("Item", itemData);

@@ -60,6 +60,21 @@ export function isPiloting(actor) {
 }
 
 /**
+ * Returns the Rig Slam weapon item from the actor, or null.
+ * Detection is by flag so it is name-independent.
+ *
+ * @param {Actor} actor
+ * @returns {Item|null}
+ */
+export function getRigSlamItem(actor) {
+  return (
+    actor?.items?.find(
+      (i) => i.flags?.[MODULE_ID]?.[FLAGS.IS_RIG_SLAM] === true
+    ) ?? null
+  );
+}
+
+/**
  * Returns the "Rig Stats" Active Effect from the actor, or null.
  * This effect carries the stat overrides applied while piloting and is
  * created on piloting start / deleted on piloting stop.

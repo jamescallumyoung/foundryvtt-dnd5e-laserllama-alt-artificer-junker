@@ -1,4 +1,24 @@
 /**
+ * The Rig Slam melee attack — source of truth for both the weapon item
+ * created on the actor and the action text displayed on the Rig tab.
+ */
+export const RIG_SLAM = {
+  name: "Slam",
+  img: "icons/commodities/metal/mail-plate-steel.webp",
+  description: "The Rig's built-in attack. Melee Weapon Attack: +4 (STR) + PB to hit, reach 5 ft., one target. Hit: 2d6 + 4 (STR) bludgeoning damage.",
+  weapon: {
+    type:          "natural",
+    attackBonus:   "@prof.flat",   // +4 base is baked in via STR mod when piloting (STR 18 = +4)
+    damage: {
+      base: { number: 2, denomination: 6, type: "bludgeoning" },
+    },
+    properties:    [],
+    weight:        { value: 0, units: "lb" },
+    proficient:    1,
+  },
+};
+
+/**
  * Hardcoded stat blocks for the Artificer's Rig and Titanic Rig.
  *
  * These values are never written to any Foundry document. They are used solely
@@ -49,11 +69,7 @@ const STANDARD_RIG = {
     },
   ],
   actions: [
-    {
-      name: "Slam",
-      description:
-        "Melee Weapon Attack: +4 + PB to hit, reach 5 ft., one target. Hit: 2d6 + 4 bludgeoning damage.",
-    },
+    { name: RIG_SLAM.name, description: RIG_SLAM.description },
   ],
 };
 
