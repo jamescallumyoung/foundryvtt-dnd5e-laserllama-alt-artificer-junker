@@ -3,6 +3,7 @@ import { getArtificerLevel } from "../helpers.mjs";
 import { getRigStats } from "../rig-stats.mjs";
 import { stashAndUpdate, unstashAndRestore } from "./stash.mjs";
 import { createRigStatsActiveEffect, removeRigStatsActiveEffect } from "./rig-stats-effect.mjs";
+import { addRigFeatures, removeRigFeatures } from "./rig-features.mjs";
 
 // ---------------------------------------------------------------------------
 // Start piloting
@@ -18,6 +19,8 @@ async function startPiloting(actor) {
   const computedHpMax = 5 + 5 * getArtificerLevel(actor);
   const effectImg    = actor.getFlag(MODULE_ID, FLAGS.RIG_IMG) ?? RIG_STATS_EFFECT_IMG_DEFAULT;
   await createRigStatsActiveEffect(actor, rigStats, computedHpMax, effectImg);
+
+  await addRigFeatures(actor, rigStats);
 }
 
 // ---------------------------------------------------------------------------
@@ -29,6 +32,8 @@ async function stopPiloting(actor) {
 
   // Persist current rig HP before restoring actor stats.
   await actor.setFlag(MODULE_ID, FLAGS.RIG_HP, actor.system.attributes.hp.value);
+
+  await removeRigFeatures(actor);
 
   await removeRigStatsActiveEffect(actor);
 

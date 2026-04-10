@@ -6,6 +6,7 @@ export const FLAGS = {
   VALUE_STASH:            "rigActorValueStash",  // object  — actor stats saved before piloting
   IS_PILOTING_RIG_EFFECT: "isPilotingRigEffect", // boolean — marks the Piloting Rig ActiveEffect
   IS_RIG_STATS_EFFECT:    "isRigStatsEffect",   // boolean — marks the Rig Stats ActiveEffect
+  IS_RIG_FEATURE:         "isRigFeature",       // boolean — marks items added to the actor while piloting
   RIG_IMG:                "rigImg",             // string  — image path for the Rig portrait
   PILOT_DISPLAY_AC:       "pilotDisplayAC",     // number  — pilot's pre-piloting AC for display
 };
@@ -13,6 +14,8 @@ export const FLAGS = {
 export const RIG_IMG_DEFAULT = "icons/svg/shield.svg";
 export const RIG_PILOTING_EFFECT_IMG_DEFAULT = "icons/svg/lever.svg"
 export const RIG_STATS_EFFECT_IMG_DEFAULT = "icons/svg/dice-target.svg"
+
+export const EFFECT_PRIORITY = 125;
 
 /**
  * The key used to register our custom AC calculation type in CONFIG.DND5E.armorClasses.

@@ -2,7 +2,7 @@
 // This effect is added when entering piloting mode, and destroyed when exiting.
 // The effect handles most stat changes to the actor.
 
-import { MODULE_ID, FLAGS, RIG_ARMOR_CALC } from "../constants.mjs";
+import { MODULE_ID, FLAGS, EFFECT_PRIORITY, RIG_ARMOR_CALC } from "../constants.mjs";
 import { getRigStatsEffect } from "../helpers.mjs";
 
 /**
@@ -16,7 +16,7 @@ import { getRigStatsEffect } from "../helpers.mjs";
 function buildNecessaryChanges(rigStats, computedHpMax) {
   const OVERRIDE = CONST.ACTIVE_EFFECT_MODES.OVERRIDE;
   const ADD      = CONST.ACTIVE_EFFECT_MODES.ADD;
-  const P        = 125;
+  const P        = EFFECT_PRIORITY;
 
   return [
     // Abilities
@@ -49,7 +49,7 @@ function buildNecessaryChanges(rigStats, computedHpMax) {
  */
 function buildFullyAuthoritativeChanges() {
   const OVERRIDE = CONST.ACTIVE_EFFECT_MODES.OVERRIDE;
-  const P        = 125;
+  const P        = EFFECT_PRIORITY;
 
   return [
     // Zero out movement types the rig does not have
