@@ -37,7 +37,7 @@ async function startPiloting(actor) {
 // Stop piloting
 // ---------------------------------------------------------------------------
 
-async function stopPiloting(actor) {
+export async function stopPiloting(actor) {
   // (undo all in the reverse order they were applied in startPiloting)
 
   // Persist current rig HP before restoring actor stats.
