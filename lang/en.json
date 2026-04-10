@@ -36,6 +36,16 @@
     "EditWhilePilotingTitle": "Editing While Piloting",
     "EditWhilePilotingContent": "<p>Warning: Changes made to the character may be lost when they stop piloting their rig.</p><p>We <em>strongly</em> suggest you cancel this edit, stop piloting the rig, and then make any changes.</p><p>If you want to make changes to the rig itself, these can be done by adding changes to the &ldquo;Piloting Rig&rdquo; effect in the effects tab. Changes added to the &ldquo;Piloting Rig&rdquo; effect will only be applied when piloting the rig.</p><p>You may dismiss this warning by clicking &ldquo;Continue editing&rdquo; below.</p>",
     "EditWhilePilotingCancel": "Cancel editing",
-    "EditWhilePilotingContinue": "Continue editing"
+    "EditWhilePilotingContinue": "Continue editing",
+    "SettingArtificerIdentifier": "Artificer Class Identifier",
+    "SettingArtificerIdentifierHint": "The class identifier used to find the Artificer class on the actor. Change this if you use a different Artificer homebrew. Defaults to 'alternate-artificer'.",
+    "SettingApplyRigStats": "Apply Rig Stats",
+    "SettingApplyRigStatsHint": "When enabled, a 'Rig Stats' active effect is created on the actor when piloting starts, overriding their ability scores, AC, movement, and traits with the rig's values.",
+    "SettingFullyAuthoritativeStats": "Fully Authoritative Rig Stats",
+    "SettingFullyAuthoritativeStatsHint": "When enabled (and Apply Rig Stats is also enabled), additional effect changes zero out any pilot values that might bleed through, such as unused movement types and AC formula overrides.",
+    "SettingResizeTokens": "Resize Tokens When Piloting",
+    "SettingResizeTokensHint": "When enabled, the actor's token is resized to Large (2×2) when piloting starts and restored to its original size when piloting ends.",
+    "SettingAddRigFeatures": "Add Rig Features When Piloting",
+    "SettingAddRigFeaturesHint": "When enabled, the rig's features and actions are added to the actor's item list when piloting starts and removed when piloting ends."
   }
 }

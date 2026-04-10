@@ -38,7 +38,7 @@ function buildIronsidesEffect() {
  * @param {Actor} actor
  * @param {object} rigStats  Stat block from getRigStats().
  */
-export async function addRigFeatures(actor, rigStats) {
+export async function createRigFeatures(actor, rigStats) {
   const flagData = { [MODULE_ID]: { [FLAGS.IS_RIG_FEATURE]: true } };
 
   const itemData = [

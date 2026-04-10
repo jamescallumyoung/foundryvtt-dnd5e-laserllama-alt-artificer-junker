@@ -28,6 +28,48 @@ Hooks.once("init", () => {
     formula: "10 + @abilities.int.mod + @prof.flat",
   };
 
+  // World settings — control which piloting behaviours are active.
+  game.settings.register(MODULE_ID, "artificerIdentifier", {
+    name: game.i18n.localize(`${MODULE_ID}.SettingArtificerIdentifier`),
+    hint: game.i18n.localize(`${MODULE_ID}.SettingArtificerIdentifierHint`),
+    scope:   "world",
+    config:  true,
+    type:    String,
+    default: "alternate-artificer",
+  });
+  game.settings.register(MODULE_ID, "applyRigStats", {
+    name: game.i18n.localize(`${MODULE_ID}.SettingApplyRigStats`),
+    hint: game.i18n.localize(`${MODULE_ID}.SettingApplyRigStatsHint`),
+    scope:  "world",
+    config: true,
+    type:    Boolean,
+    default: true,
+  });
+  game.settings.register(MODULE_ID, "fullyAuthoritativeStats", {
+    name: game.i18n.localize(`${MODULE_ID}.SettingFullyAuthoritativeStats`),
+    hint: game.i18n.localize(`${MODULE_ID}.SettingFullyAuthoritativeStatsHint`),
+    scope:  "world",
+    config: true,
+    type:    Boolean,
+    default: true,
+  });
+  game.settings.register(MODULE_ID, "resizeTokens", {
+    name: game.i18n.localize(`${MODULE_ID}.SettingResizeTokens`),
+    hint: game.i18n.localize(`${MODULE_ID}.SettingResizeTokensHint`),
+    scope:  "world",
+    config: true,
+    type:    Boolean,
+    default: true,
+  });
+  game.settings.register(MODULE_ID, "addRigFeatures", {
+    name: game.i18n.localize(`${MODULE_ID}.SettingAddRigFeatures`),
+    hint: game.i18n.localize(`${MODULE_ID}.SettingAddRigFeaturesHint`),
+    scope:  "world",
+    config: true,
+    type:    Boolean,
+    default: true,
+  });
+
   registerActorSheetHooks();
   registerClassFeatureHooks();
   registerPilotingHooks();

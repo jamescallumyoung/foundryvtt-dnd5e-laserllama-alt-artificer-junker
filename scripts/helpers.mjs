@@ -7,9 +7,10 @@ import { MODULE_ID, FLAGS, RIG_PILOT_SUBTYPE } from "./constants.mjs";
  * @returns {number}
  */
 export function getArtificerLevel(actor) {
+  const identifier = game.settings.get(MODULE_ID, "artificerIdentifier");
   return (
     Object.values(actor.classes ?? {}).find(
-      (c) => c.system.identifier === "artificer"
+      (c) => c.system.identifier === identifier
     )?.system.levels ?? 0
   );
 }

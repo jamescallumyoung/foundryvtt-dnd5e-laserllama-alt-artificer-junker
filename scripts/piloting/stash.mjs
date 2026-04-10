@@ -1,6 +1,6 @@
 import { MODULE_ID, FLAGS } from "../constants.mjs";
 
-export async function stashAndUpdate(actor, rigHp, rigImg) {
+export async function stashAndUpdate(actor, rigHp, rigImg, resizeTokens) {
   // Capture the pilot's current AC before any overrides.
   // Stored in a dedicated flag so it is not mixed into the actor.update() stash.
   await actor.setFlag(MODULE_ID, FLAGS.PILOT_DISPLAY_AC, actor.system.attributes.ac.value);
@@ -13,8 +13,6 @@ export async function stashAndUpdate(actor, rigHp, rigImg) {
     // need to be restored
     "img":                        actor.img,
     "prototypeToken.texture.src": actor.prototypeToken.texture.src,
-    "prototypeToken.width":       actor.prototypeToken.width,
-    "prototypeToken.height":      actor.prototypeToken.height,
     "system.attributes.hp.value": actor.system.attributes.hp.value,
 
     // just shown in pilot stat block section of rig tab
@@ -22,6 +20,12 @@ export async function stashAndUpdate(actor, rigHp, rigImg) {
     "system.abilities.dex.value": actor.system.abilities.dex.value,
     "system.abilities.con.value": actor.system.abilities.con.value,
     "system.attributes.hp.max":   actor.system.attributes.hp.max,
+
+    // need to be restored - only if resizeTokens is enabled
+    ...(resizeTokens ? {
+      "prototypeToken.width":  actor.prototypeToken.width,
+      "prototypeToken.height": actor.prototypeToken.height,
+    } : {}),
   };
   await actor.setFlag(MODULE_ID, FLAGS.VALUE_STASH, stash);
 
@@ -29,14 +33,13 @@ export async function stashAndUpdate(actor, rigHp, rigImg) {
   await actor.update({
     "img":                        rigImg,
     "prototypeToken.texture.src": rigImg,
-    "prototypeToken.width":       2,
-    "prototypeToken.height":      2,
     "system.attributes.hp.value": rigHp,
+    ...(resizeTokens ? { "prototypeToken.width": 2, "prototypeToken.height": 2 } : {}),
   });
 
   // Update placed canvas tokens once, combining image and size.
   const tokenUpdates = actor.getActiveTokens(false, true)
-    .map(t => t.update({ "texture.src": rigImg, width: 2, height: 2 }));
+    .map(t => t.update({ "texture.src": rigImg, ...(resizeTokens ? { width: 2, height: 2 } : {}) }));
   await Promise.all(tokenUpdates);
 }
 
@@ -47,15 +50,19 @@ export async function unstashAndRestore(actor) {
     return;
   }
 
-  // Restore all manually-managed fields in a single update.
   // Foundry expands dot-notation stash keys into nested objects on flag storage,
   // so read via nested paths.
+  const hadTokenResize = stash.prototypeToken?.width != null;
+
+  // Restore all manually-managed fields in a single update.
   await actor.update({
     "img":                        stash.img,
     "prototypeToken.texture.src": stash.prototypeToken?.texture?.src,
-    "prototypeToken.width":       stash.prototypeToken?.width,
-    "prototypeToken.height":      stash.prototypeToken?.height,
     "system.attributes.hp.value": stash.system?.attributes?.hp?.value,
+    ...(hadTokenResize ? {
+      "prototypeToken.width":  stash.prototypeToken.width,
+      "prototypeToken.height": stash.prototypeToken.height,
+    } : {}),
   });
 
   await actor.unsetFlag(MODULE_ID, FLAGS.VALUE_STASH);
@@ -64,6 +71,9 @@ export async function unstashAndRestore(actor) {
   // Read from prototypeToken after the update rather than from the stash.
   const proto = actor.prototypeToken;
   const tokenUpdates = actor.getActiveTokens(false, true)
-    .map(t => t.update({ "texture.src": proto.texture.src, width: proto.width, height: proto.height }));
+    .map(t => t.update({
+      "texture.src": proto.texture.src,
+      ...(hadTokenResize ? { width: proto.width, height: proto.height } : {}),
+    }));
   await Promise.all(tokenUpdates);
 }

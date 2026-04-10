@@ -3,24 +3,34 @@ import { getArtificerLevel } from "../helpers.mjs";
 import { getRigStats } from "../rig-stats.mjs";
 import { stashAndUpdate, unstashAndRestore } from "./stash.mjs";
 import { createRigStatsActiveEffect, removeRigStatsActiveEffect } from "./rig-stats-effect.mjs";
-import { addRigFeatures, removeRigFeatures } from "./rig-features.mjs";
+import { createRigFeatures, removeRigFeatures } from "./rig-features.mjs";
 
 // ---------------------------------------------------------------------------
 // Start piloting
 // ---------------------------------------------------------------------------
 
 async function startPiloting(actor) {
-  const rigHp     = actor.getFlag(MODULE_ID, FLAGS.RIG_HP) ?? 0;
-  const rigImg    = actor.getFlag(MODULE_ID, FLAGS.RIG_IMG) ?? RIG_IMG_DEFAULT;
-  await stashAndUpdate(actor, rigHp, rigImg);
+  const applyRigStats          = game.settings.get(MODULE_ID, "applyRigStats");
+  const fullyAuthoritativeStats = game.settings.get(MODULE_ID, "fullyAuthoritativeStats");
+  const resizeTokens            = game.settings.get(MODULE_ID, "resizeTokens");
+  const addRigFeaturesSetting   = game.settings.get(MODULE_ID, "addRigFeatures");
 
-  const isTitanic = actor.getFlag(MODULE_ID, FLAGS.IS_TITANIC) ?? false;
-  const rigStats  = getRigStats(isTitanic);
+  const rigHp  = actor.getFlag(MODULE_ID, FLAGS.RIG_HP) ?? 0;
+  const rigImg = actor.getFlag(MODULE_ID, FLAGS.RIG_IMG) ?? RIG_IMG_DEFAULT;
+  await stashAndUpdate(actor, rigHp, rigImg, resizeTokens);
+
+  const isTitanic     = actor.getFlag(MODULE_ID, FLAGS.IS_TITANIC) ?? false;
+  const rigStats      = getRigStats(isTitanic);
   const computedHpMax = 5 + 5 * getArtificerLevel(actor);
-  const effectImg    = actor.getFlag(MODULE_ID, FLAGS.RIG_IMG) ?? RIG_STATS_EFFECT_IMG_DEFAULT;
-  await createRigStatsActiveEffect(actor, rigStats, computedHpMax, effectImg);
 
-  await addRigFeatures(actor, rigStats);
+  if (applyRigStats) {
+    const effectImg = actor.getFlag(MODULE_ID, FLAGS.RIG_IMG) ?? RIG_STATS_EFFECT_IMG_DEFAULT;
+    await createRigStatsActiveEffect(actor, rigStats, computedHpMax, effectImg, fullyAuthoritativeStats);
+  }
+
+  if (addRigFeaturesSetting) {
+    await createRigFeatures(actor, rigStats);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -37,7 +47,10 @@ async function stopPiloting(actor) {
 
   await removeRigStatsActiveEffect(actor);
 
-  await unstashAndRestore(actor);
+  const hasStash = actor.getFlag(MODULE_ID, FLAGS.VALUE_STASH) != null;
+  if (hasStash) {
+    await unstashAndRestore(actor);
+  }
 }
 
 // ---------------------------------------------------------------------------

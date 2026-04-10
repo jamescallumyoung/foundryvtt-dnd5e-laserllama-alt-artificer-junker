@@ -71,30 +71,31 @@ function buildFullyAuthoritativeChanges() {
 
 /**
  * Builds the full changes array for the Rig Stats Active Effect.
- * TODO: In Stage 10, fully-authoritative changes will be gated behind a world setting.
  *
- * @param {object} rigStats
- * @param {number} computedHpMax
+ * @param {object}  rigStats
+ * @param {number}  computedHpMax
+ * @param {boolean} fullyAuthoritativeStats  When true, includes changes that zero out pilot
+ *                                           values that might otherwise bleed through.
  * @returns {object[]}
  */
-function buildRigStatsChanges(rigStats, computedHpMax) {
+function buildRigStatsChanges(rigStats, computedHpMax, fullyAuthoritativeStats) {
   return [
     ...buildNecessaryChanges(rigStats, computedHpMax),
-    ...buildFullyAuthoritativeChanges(),
+    ...(fullyAuthoritativeStats ? buildFullyAuthoritativeChanges() : []),
   ];
 }
 
 /**
  * Create the "Rig Stats" active effect on the actor.
  */
-export async function createRigStatsActiveEffect(actor, rigStats, computedHpMax, effectImg) {
+export async function createRigStatsActiveEffect(actor, rigStats, computedHpMax, effectImg, fullyAuthoritativeStats) {
     // Create the Rig Stats Active Effect — handles abilities, hp.max, AC, movement,
     // and traits. Automatically restored when the effect is deleted on stop.
     await actor.createEmbeddedDocuments("ActiveEffect", [{
         name:     game.i18n.localize(`${MODULE_ID}.RigStatsEffectName`),
         img:      effectImg,
         disabled: false,
-        changes:  buildRigStatsChanges(rigStats, computedHpMax),
+        changes:  buildRigStatsChanges(rigStats, computedHpMax, fullyAuthoritativeStats),
         flags:    { [MODULE_ID]: { [FLAGS.IS_RIG_STATS_EFFECT]: true } },
     }]);
 }
